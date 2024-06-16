@@ -20,6 +20,7 @@
 # FPGA_TOP = fpga
 # FPGA_FAMILY = VirtexUltrascale
 # FPGA_DEVICE = xcvu095-ffva2104-2-e
+# TB_FILES  = rtl/sim/fpga_tb.v
 # SYN_FILES = rtl/fpga.v
 # XDC_FILES = fpga.xdc
 # XCI_FILES = ip/pcspma.xci
@@ -41,6 +42,7 @@ FPGA_TOP ?= fpga
 PROJECT ?= $(FPGA_TOP)
 
 SYN_FILES_REL = $(foreach p,$(SYN_FILES),$(if $(filter /% ./%,$p),$p,../$p))
+TB_FILES_REL = $(foreach p,$(TB_FILES),$(if $(filter /% ./%,$p),$p,../$p))
 INC_FILES_REL = $(foreach p,$(INC_FILES),$(if $(filter /% ./%,$p),$p,../$p))
 XCI_FILES_REL = $(foreach p,$(XCI_FILES),$(if $(filter /% ./%,$p),$p,../$p))
 IP_TCL_FILES_REL = $(foreach p,$(IP_TCL_FILES),$(if $(filter /% ./%,$p),$p,../$p))
@@ -87,6 +89,7 @@ create_project.tcl: Makefile $(XCI_FILES_REL) $(IP_TCL_FILES_REL)
 	touch defines.v
 	for x in $(DEFS); do echo '`define' $$x >> defines.v; done
 	echo "create_project -force -part $(FPGA_PART) $(PROJECT)" > $@
+	echo "add_files -fileset sim_1 defines.v $(TB_FILES_REL)" >> $@
 	echo "add_files -fileset sources_1 defines.v $(SYN_FILES_REL)" >> $@
 	echo "set_property top $(FPGA_TOP) [current_fileset]" >> $@
 	echo "add_files -fileset constrs_1 $(XDC_FILES_REL)" >> $@
@@ -108,6 +111,8 @@ $(PROJECT).runs/synth_1/$(PROJECT).dcp: create_project.tcl update_config.tcl $(S
 	echo "launch_runs -jobs 4 synth_1" >> run_synth.tcl
 	echo "wait_on_run synth_1" >> run_synth.tcl
 	vivado -nojournal -nolog -mode batch -source run_synth.tcl
+
+# TODO: simulation run
 
 # implementation run
 $(PROJECT).runs/impl_1/$(PROJECT)_routed.dcp: $(PROJECT).runs/synth_1/$(PROJECT).dcp

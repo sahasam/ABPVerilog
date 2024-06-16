@@ -26,6 +26,9 @@ SYN_FILES += rtl/xlnx-temac/temac_syncer_level.v
 SYN_FILES += rtl/xlnx-temac/temac_ten_100_1g_eth_fifo.v
 SYN_FILES += rtl/xlnx-temac/temac_tx_client_fifo.v
 
+# Integration Testbench
+TB_FILES  = rtl/sim/demo_tb.v
+TB_FILES += rtl/sim/tri_mode_ethernet_mac_0_frame_typ.v
 
 # XDC files
 XDC_FILES = xdc/fpga.xdc
@@ -33,10 +36,6 @@ XDC_FILES = xdc/fpga.xdc
 # IP
 IP_TCL_FILES  = scripts/zynq_ps.tcl
 IP_TCL_FILES += scripts/get_ip.tcl
-
-# Configuration
-#XCI_FILES = ip/tri_mode_ethernet_mac_0.xci
-
 
 
 ###########################################################

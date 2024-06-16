@@ -1,5 +1,5 @@
 /* Alternating Bit Protocol: Receiver Side: Packet Receiver
- * Sahas Munamala 06/09/24
+ * Sahas Munamala 06/09/2024
  */
 
 module abp_receiver_receiver (
@@ -101,20 +101,23 @@ always_ff @ (posedge aclk or negedge aresetn) begin
                     end else begin
                         // If the packet is too long, stop writing, but read until tlast.
                         if (s_axis_tlast) begin
+                            r_we <= 1'b0;
                             r_tready <= 1'b0;
-                            r_addr <= 6'd0;
-                            state <= ANALYSIS
+                            state <= CHECK_BIT;
                         end
                         r_we <= 1'b0;
                         r_tready <= 1'b0;
                     end
                 end else begin
-                    r_we <= 1'b0;
+                    if (l_dout[0] == expected_bit) begin
+                        state <= ANALYSIS;
+                    end
+                    
                 end
             end
 
             CHECK_BIT: begin
-
+                r
             end
 
             ANALYSIS: begin

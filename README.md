@@ -9,7 +9,10 @@ Working:
 - ILAs to collect data
 
 To do
-- [ ] Create vivado sim to test integration
+- [x] Create vivado sim to test integration
+    - [ ] Modify tb packets for ABP
+- [ ] Hook SV components to Vivado project
+    - [ ] Finish ABP_Receiver
 - [ ] Create Alice/Bob parametrizable builds/deploys
 - [ ] Create AXI4-Lite interface
 - [ ] Create/Verify Alternating bit protocol in SV

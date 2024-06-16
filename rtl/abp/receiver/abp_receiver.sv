@@ -1,5 +1,5 @@
 /* Alternating bit protocol. Receiver Side.
- * Sahas Munamala - 6/3/2024
+ * Sahas Munamala 06/03/2024
  */
 module abp_receiver (
     input  logic       aclk,
