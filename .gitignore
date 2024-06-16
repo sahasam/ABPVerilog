@@ -1,0 +1,8 @@
+IP/
+
+vivado/*
+!vivado/Makefile
+
+tb/__pycache__
+tb/env
+tb/sim_build
