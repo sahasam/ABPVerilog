@@ -7,8 +7,8 @@ TOPLEVEL ?= top_module_name  # Replace with the name of your top-level module
 MODULE ?= test_module_name  # Replace with the name of your Python test module (without the .py extension)
 
 # Path to your Verilog sources
-VERILOG_SOURCES += $(wildcard ../rtl/*.sv)
-VERILOG_SOURCES += $(wildcard ../rtl/receiver/*.sv)  
+VERILOG_SOURCES += $(wildcard ../rtl/abp/receiver/*.sv)
+VERILOG_SOURCES += $(wildcard ../rtl/abp/sram.sv)  
 
 # Path to your Cocotb test
 PYTHONPATH = ./:$(PYTHONPATH)
