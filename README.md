@@ -9,12 +9,12 @@ Working:
 - ILAs to collect data
 
 To do
-- [x] Create vivado sim to test integration
-    - [ ] Modify tb packets for ABP
-- [ ] Hook SV components to Vivado project
-    - [ ] Finish ABP_Receiver
+- [x] Create vivado sim to test integration. Full project simulation in Vivado.
+    - [x] Modify tb for ABP
+- [x] Hook SV components to Vivado project
+    - [x] Finish ABP_Receiver
 - [ ] Create Alice/Bob parametrizable builds/deploys
-- [ ] Create AXI4-Lite interface
-- [ ] Create/Verify Alternating bit protocol in SV
+- [ip] Create AXI4-Lite interface
+- [ip] Create/Verify Alternating bit protocol in SV
 - [ ] Hook Alternating bit protocol to Register interface
 - [ ] Create polling driver example in python
