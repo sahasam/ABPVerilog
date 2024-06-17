@@ -683,7 +683,7 @@ module demo_tb;
     $stop;
   end
 
-
+  
 
   //----------------------------------------------------------------------------
   // Simulate the MDIO -
@@ -776,22 +776,19 @@ module demo_tb;
   //----------------------------------------------------------------------------
   // Clock drivers
   //----------------------------------------------------------------------------
-  
-
   //drives input to an MMCM at 200MHz which creates gtx_clk at 125 MHz
   initial
   begin
-    
     mmcm_clk_in <= 1'b0;
-    
-  #80000;
+
+    #80000;
     forever
     begin
       mmcm_clk_in <= 1'b0;
-      
+
       #gtx_period;
       mmcm_clk_in <= 1'b1;
-      
+
       #gtx_period;
     end
   end
@@ -886,9 +883,8 @@ module demo_tb;
      if (reset) begin
         bist_mode_error <= 0;
      end
-        
+
      else if (frame_error & !bist_mode_error) begin
-        
         bist_mode_error <= 1;
         $display("ERROR: frame mismatch at time %t ps", $time);
      end
@@ -919,7 +915,7 @@ module demo_tb;
     wait (mdio_count == 32);
     wait (mdio_count == 0);
 
-    
+
 
     if (TB_MODE == "BIST") begin
        gen_tx_data <= 1'b1;
@@ -929,12 +925,9 @@ module demo_tb;
        // Our work here is done
 
 
-         
        if (frame_error) begin
-         
           $display("ERROR: Frame mismatch seen");
        end
-          
 
        else if (serial_response) begin
           $display("ERROR: AXI4 Lite state Machine error.  Incorrect or non-existant PTP frame.");

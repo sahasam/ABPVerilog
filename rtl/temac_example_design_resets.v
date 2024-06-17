@@ -51,7 +51,7 @@
 // Description:  This block generates fully synchronous resets for each clock domain
 `timescale 1 ps/1 ps
 
-module tri_mode_ethernet_mac_0_example_design_resets
+module temac_example_design_resets
    (
    // clocks
    input          s_axi_aclk,
@@ -66,11 +66,11 @@ module tri_mode_ethernet_mac_0_example_design_resets
    input          dcm_locked,
 
    // synchronous reset outputs
-  
+
    output         glbl_rst_intn,
-   
+
    output   reg   gtx_resetn = 0,
-   
+
    output   reg   s_axi_resetn = 0,
    output         phy_resetn,
    output   reg   chk_resetn = 0
@@ -79,10 +79,10 @@ module tri_mode_ethernet_mac_0_example_design_resets
 // define internal signals
     reg           s_axi_pre_resetn = 0;
     wire          s_axi_reset_int;
-    
+
     reg           gtx_pre_resetn = 0;
     wire          gtx_clk_reset_int;
-    
+
     reg           chk_pre_resetn = 0;
     wire          chk_reset_int;
     wire          dcm_locked_sync;
@@ -140,21 +140,19 @@ module tri_mode_ethernet_mac_0_example_design_resets
    end
 
   //---------------
-  
+
   // gtx_clk reset
-  
+
    tri_mode_ethernet_mac_0_reset_sync gtx_reset_gen (
-      
       .clk              (gtx_clk),
-      
       .enable           (dcm_locked_sync),
       .reset_in         (glbl_rst || rx_reset || tx_reset),
-      
+
       .reset_out        (gtx_clk_reset_int)
-      
+
    );
 
-   
+
    // Create fully synchronous reset in the gtx_clk domain.
    always @(posedge gtx_clk)
    begin
@@ -171,18 +169,17 @@ module tri_mode_ethernet_mac_0_example_design_resets
   //---------------
   // data check reset
    tri_mode_ethernet_mac_0_reset_sync chk_reset_gen (
-      
       .clk              (gtx_clk),
-      
+
       .enable           (dcm_locked_sync),
       .reset_in         (glbl_rst || reset_error),
       .reset_out        (chk_reset_int)
    );
 
-   
+
    // Create fully synchronous reset in the gtx_clk domain.
    always @(posedge gtx_clk)
-   
+
    begin
      if (chk_reset_int) begin
        chk_pre_resetn  <= 0;

@@ -42,7 +42,7 @@ typedef enum logic [3:0] {
     ANALYSIS,
     DONE
 } transmitter_state_t;
-transmitter_state_t state;
+transmitter_state_t state, next_state;
 
 //64x8 bram
 bram #(
@@ -56,7 +56,53 @@ bram #(
     .data_out (l_dout)
 );
 
+always_ff @(posedge aclk or negedge aresetn) begin
+    if (!aresetn) begin
+        state <= RESET_STATE;
+    end else begin
+        state <= next_state;
+    end
+end
 
+always_comb begin
+    case (state)
+        RESET_STATE: begin
+            r_busy = 1'b0;
+            r_sender_value = 64'd0;
+            r_recv_flag = 1'b0;
+            r_addr = 6'd0;
+            r_we = 1'd0;
+            r_din = 8'h00;
+            next_state = WAITING;
+        end
+
+        WAITING: begin
+            r_tready = 1'b0;
+            r_addr = 6'd0;
+            r_we   = 1'b0;
+            if (s_axis_tvalid) begin
+                next_state = RECEIVING;
+            end
+        end
+
+        RECEIVING: begin
+
+        end
+
+        CHECK_BIT: begin
+
+        end
+
+        ANALYSIS: begin
+
+        end
+
+        default: begin
+
+        end
+    endcase
+end
+/*
 always_ff @ (posedge aclk or negedge aresetn) begin
     if (!aresetn) begin
         state <= RESET_STATE;
@@ -152,5 +198,6 @@ always_ff @ (posedge aclk or negedge aresetn) begin
         endcase
     end
 end
+*/
 
 endmodule

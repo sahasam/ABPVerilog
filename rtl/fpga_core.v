@@ -115,7 +115,8 @@
 //    | |      |  |  |        |  |                     |
 //    | --------  |  ----------  |                     |
 //    |           |              |                     |
-//    |           |              ----------------------| |           -------------------------------------|
+//    |           |              ----------------------|
+//    |           -------------------------------------|
 //    --------------------------------------------------
 
 //------------------------------------------------------
@@ -151,12 +152,12 @@ module fpga_core
       input         rgmii_gem2_rx_ctl,
       input         rgmii_gem2_rxc,
 
-      
+
       // MDIO Interface
       //---------------
       inout         mdio,
       output        mdc,
-      
+
       // Debug Signals
       output        debug_1,
       output        debug_2
@@ -170,23 +171,23 @@ module fpga_core
    wire [1:0]           mac_speed_sync_gtx_clk;
    wire                 update_speed_sync_gtx_clk;
    wire                 config_board_sync_gtx_clk;
-   
+
    wire                 pause_req_s_sync_axilite_clk;
    wire                 update_speed_sync_axilite_clk;
-   
+
    wire                 config_board_sync_axilite_clk;
-   
-   
+
+
    wire [1:0]           mac_speed_sync_axilite_clk;
    wire                 gen_tx_data_sync_axilite_clk;
    wire                 chk_tx_data_sync_axilite_clk;
-   
+
    wire                 gen_tx_data_sync_gtx_clk;
    wire                 chk_tx_data_sync_gtx_clk;
 
    // example design clocks
    wire                 gtx_clk_bufg;
-   
+
    wire                 refclk_bufg;
    wire                 s_axi_aclk;
    wire                 rx_mac_aclk;
@@ -194,9 +195,9 @@ module fpga_core
    // resets (and reset generation)
    wire                 s_axi_resetn;
    wire                 chk_resetn;
-   
+
    wire                 gtx_resetn;
-   
+
    wire                 rx_reset;
    wire                 tx_reset;
 
@@ -207,9 +208,9 @@ module fpga_core
    // USER side RX AXI-S interface
    wire                 rx_fifo_clock;
    wire                 rx_fifo_resetn;
-   
+
    wire  [7:0]          rx_axis_fifo_tdata;
-   
+
    wire                 rx_axis_fifo_tvalid;
    wire                 rx_axis_fifo_tlast;
    wire                 rx_axis_fifo_tready;
@@ -217,9 +218,9 @@ module fpga_core
    // USER side TX AXI-S interface
    wire                 tx_fifo_clock;
    wire                 tx_fifo_resetn;
-   
+
    wire  [7:0]          tx_axis_fifo_tdata;
-   
+
    wire                 tx_axis_fifo_tvalid;
    wire                 tx_axis_fifo_tlast;
    wire                 tx_axis_fifo_tready;
@@ -275,9 +276,9 @@ module fpga_core
    wire                 int_activity_flash;
 
    // set board defaults - only updated when reprogrammed
-   reg                  enable_address_swap = 1;  
+   reg                  enable_address_swap = 1;
    reg                  enable_phy_loopback = 0;
-   
+
    // hardcoded example values
    reg   [1:0]          mac_speed = 2'b10;
    reg                  gen_tx_data = 0;
@@ -286,7 +287,7 @@ module fpga_core
    reg                  config_board = 0;
    reg                  update_speed = 0;
    reg                  reset_error = 1'b0;
-   
+
    // tie offs
    wire                 tx_statistics_s;
    wire                 rx_statistics_s;
@@ -295,7 +296,7 @@ module fpga_core
    wire                 frame_errorn;
    wire                 activity_flash;
    wire                 activity_flashn;
-   
+
     // STARTUP RESET
     reg startup_reset = 1'b1;
     reg [4:0] rst_counter = 5'd0;
@@ -331,7 +332,7 @@ module fpga_core
      .data_out         (update_speed_sync_gtx_clk)
   );
 
-  
+
   tri_mode_ethernet_mac_0_sync_block pause_req_s_axilite_sync_inst (
      .clk              (s_axi_aclk),
      .data_in          (pause_req_s),
@@ -339,34 +340,34 @@ module fpga_core
   );
 
 
-  
+
   tri_mode_ethernet_mac_0_sync_block update_speed_axilite_sync_inst (
      .clk              (s_axi_aclk),
      .data_in          (update_speed),
      .data_out         (update_speed_sync_axilite_clk)
   );
-  
+
 
   tri_mode_ethernet_mac_0_sync_block config_board_gtx_sync_inst (
      .clk              (gtx_clk_bufg),
      .data_in          (config_board),
      .data_out         (config_board_sync_gtx_clk)
   );
-  
+
   tri_mode_ethernet_mac_0_sync_block config_board_axilite_sync_inst (
      .clk              (s_axi_aclk),
      .data_in          (config_board),
      .data_out         (config_board_sync_axilite_clk)
   );
-  
 
-   
+
+
   tri_mode_ethernet_mac_0_syncer_level #(
     .WIDTH       (2)
    ) mac_speed_axilite_sync(
     .clk      (s_axi_aclk),
     .reset    (!s_axi_resetn),
-  
+
     .datain   (mac_speed),
     .dataout  (mac_speed_sync_axilite_clk)
   );
@@ -417,7 +418,7 @@ module fpga_core
 
   assign frame_error  = int_frame_error;
   assign frame_errorn = !int_frame_error;
-  
+
   // when the config_board button is pushed capture and hold the
   // state of the gne/chek tx_data inputs.  These values will persist until the
   // board is reprogrammed or config_board is pushed again
@@ -428,7 +429,7 @@ module fpga_core
      end
   end
 
-            
+
   always @(posedge s_axi_aclk)
   begin
      if (config_board_sync_axilite_clk) begin
@@ -440,7 +441,7 @@ module fpga_core
   // Clock logic to generate required clocks from the 200MHz on board
   // if 125MHz is available directly this can be removed
   //----------------------------------------------------------------------------
-  
+
     BUFG
     clk_25mhz_bufg_in_inst (
         .I(clk_25mhz_ref),
@@ -505,47 +506,47 @@ module fpga_core
         .CLKFBOUTB(),
         .LOCKED(mmcm_locked)
     );
-    
+
     assign debug_1 = mmcm_locked;
     assign debug_2 = frame_error;
-    
+
     BUFG
     clk_100mhz_bufg_inst (
         .I(clk_100mhz_mmcm_out),
         .O(clk_100mhz_int)
     );
-    
+
     BUFG
     clk_125mhz_bufg_inst (
         .I(clk_125mhz_mmcm_out),
         .O(clk_125mhz_int)
     );
-    
+
     BUFG
     clk_333mhz_bufg_inst (
         .I(clk_333mhz_mmcm_out),
         .O(clk_333mhz_int)
     );
-    
+
     assign s_axi_aclk = clk_100mhz_int;
     assign gtx_clk_bufg = clk_125mhz_int;
     assign refclk_bufg = clk_333mhz_int;
     assign gtx_clk_bufg_out = clk_125mhz_int;
-   
+
 
   //----------------------------------------------------------------------------
   // Generate the user side clocks for the axi fifos
   //----------------------------------------------------------------------------
-   
+
   assign tx_fifo_clock = gtx_clk_bufg;
   assign rx_fifo_clock = gtx_clk_bufg;
-   
+
 
   //----------------------------------------------------------------------------
   // Generate resets required for the fifo side signals etc
   //----------------------------------------------------------------------------
 
-   tri_mode_ethernet_mac_0_example_design_resets example_resets
+   temac_example_design_resets example_resets
    (
       // clocks
       .s_axi_aclk       (s_axi_aclk),
@@ -560,12 +561,12 @@ module fpga_core
       .dcm_locked       (mmcm_locked),
 
       // synchronous reset outputs
-  
+
       .glbl_rst_intn    (glbl_rst_intn),
-   
-   
+
+
       .gtx_resetn       (gtx_resetn),
-   
+
       .s_axi_resetn     (s_axi_resetn),
       .phy_resetn       (phy_resetn),
       .chk_resetn       (chk_resetn)
@@ -573,10 +574,10 @@ module fpga_core
 
 
    // generate the user side resets for the axi fifos
-   
+
    assign tx_fifo_resetn = gtx_resetn;
    assign rx_fifo_resetn = gtx_resetn;
-   
+
 
   //----------------------------------------------------------------------------
   // Serialize the stats vectors
@@ -692,10 +693,10 @@ module fpga_core
       .s_axi_resetn                 (s_axi_resetn),
 
       .mac_speed                    (mac_speed_sync_axilite_clk),
-      .update_speed                 (update_speed_sync_axilite_clk),   // may need glitch protection on this..
+      .update_speed                 (update_speed_sync_axilite_clk),   // may need glitch protection
       .serial_command               (pause_req_s_sync_axilite_clk),
       .serial_response              (serial_response),
-            
+
       .phy_loopback                 (enable_phy_loopback),
 
       .s_axi_awaddr                 (s_axi_awaddr),
@@ -725,8 +726,8 @@ module fpga_core
   //----------------------------------------------------------------------------
   tri_mode_ethernet_mac_0_fifo_block trimac_fifo_block (
       .gtx_clk                      (gtx_clk_bufg),
-      
-       
+
+
       // asynchronous reset
       .glbl_rstn                    (glbl_rst_intn),
       .rx_axi_rstn                  (1'b1),
@@ -751,7 +752,7 @@ module fpga_core
       .rx_axis_fifo_tvalid          (rx_axis_fifo_tvalid),
       .rx_axis_fifo_tready          (rx_axis_fifo_tready),
       .rx_axis_fifo_tlast           (rx_axis_fifo_tlast),
-       
+
       // Transmitter Statistics Interface
       //------------------------------------------
       .tx_mac_aclk                  (tx_mac_aclk),
@@ -768,7 +769,6 @@ module fpga_core
       .tx_axis_fifo_tvalid          (tx_axis_fifo_tvalid),
       .tx_axis_fifo_tready          (tx_axis_fifo_tready),
       .tx_axis_fifo_tlast           (tx_axis_fifo_tlast),
-       
 
 
       // MAC Control Interface
@@ -791,7 +791,7 @@ module fpga_core
       .inband_clock_speed           (inband_clock_speed),
       .inband_duplex_status         (inband_duplex_status),
 
-      
+
       // MDIO Interface
       //---------------
       .mdc                          (mdc),
