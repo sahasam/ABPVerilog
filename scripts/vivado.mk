@@ -41,7 +41,8 @@ CONFIG ?= config.mk
 FPGA_TOP ?= fpga
 PROJECT ?= $(FPGA_TOP)
 
-SYN_FILES_REL = $(foreach p,$(SYN_FILES),$(if $(filter /% ./%,$p),$p,../$p))
+SYNV_FILES_REL = $(foreach p,$(SYNV_FILES),$(if $(filter /% ./%,$p),$p,../$p))
+SYNSV_FILES_REL = $(foreach p,$(SYNSV_FILES),$(if $(filter /% ./%,$p),$p,../$p))
 TB_FILES_REL = $(foreach p,$(TB_FILES),$(if $(filter /% ./%,$p),$p,../$p))
 INC_FILES_REL = $(foreach p,$(INC_FILES),$(if $(filter /% ./%,$p),$p,../$p))
 XCI_FILES_REL = $(foreach p,$(XCI_FILES),$(if $(filter /% ./%,$p),$p,../$p))
@@ -84,13 +85,16 @@ distclean:: clean
 ###################################################################
 
 # Vivado project file
+# echo "import_files -norecurse {$(SYN_FILES_REL)}" >> $@
 create_project.tcl: Makefile $(XCI_FILES_REL) $(IP_TCL_FILES_REL)
 	rm -rf defines.v
 	touch defines.v
 	for x in $(DEFS); do echo '`define' $$x >> defines.v; done
 	echo "create_project -force -part $(FPGA_PART) $(PROJECT)" > $@
 	echo "add_files -fileset sim_1 defines.v $(TB_FILES_REL)" >> $@
-	echo "add_files -fileset sources_1 defines.v $(SYN_FILES_REL)" >> $@
+	echo "add_files -fileset sources_1 defines.v $(SYNV_FILES_REL)" >> $@
+	echo "read_verilog -sv $(SYNSV_FILES_REL)" >> $@
+	echo "update_compile_order -fileset sources_1" >> $@
 	echo "set_property top $(FPGA_TOP) [current_fileset]" >> $@
 	echo "add_files -fileset constrs_1 $(XDC_FILES_REL)" >> $@
 	for x in $(XCI_FILES_REL); do echo "import_ip $$x" >> $@; done

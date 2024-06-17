@@ -1,8 +1,8 @@
 `timescale 1ns / 1ps
 
 module bram #(
-    parameter ADDRESS_WIDTH = 6,
-    parameter DATA_WIDTH = 8
+    parameter integer ADDRESS_WIDTH = 6,
+    parameter integer DATA_WIDTH = 8
 )(
     input  logic clk,
     input  logic we,
@@ -11,7 +11,7 @@ module bram #(
     output logic [DATA_WIDTH-1:0] data_out
 );
 
-reg [DATA_WIDTH-1:0] mem [2**ADDRESS_WIDTH-1:0];
+reg [DATA_WIDTH-1:0] mem [2**ADDRESS_WIDTH-1];
 
 always_ff @ (posedge clk) begin
     if (we) begin

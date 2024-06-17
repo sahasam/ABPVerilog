@@ -38,20 +38,22 @@
  *     either a timeout or a change in the alternating bit to transition back to the NEW_DATA state.
  */
 
- module abp_receiver_transmitter #(
-    parameter TIMEOUT_DURATION = 10
- )(
-    input logic       aclk,
-    input logic       aresetn,
+`timescale 1 ps/1 ps
 
-    output logic       m_axis_tvalid,
-    input  logic       m_axis_tready,
-    output logic       m_axis_tlast,
-    output logic [7:0] m_axis_tdata,
+module abp_receiver_transmitter #(
+   parameter int TIMEOUT_DURATION = 10
+)(
+   input logic       aclk,
+   input logic       aresetn,
 
-    input  logic        alternating_bit,
-    output logic        busy
- );
+   output logic       m_axis_tvalid,
+   input  logic       m_axis_tready,
+   output logic       m_axis_tlast,
+   output logic [7:0] m_axis_tdata,
+
+   input  logic        alternating_bit,
+   output logic        busy
+);
 
 reg reg_busy = 1'b0;
 assign busy = reg_busy;
@@ -64,7 +66,6 @@ reg [7:0] reg_tdata;
 assign m_axis_tlast = reg_tlast;
 assign m_axis_tvalid = reg_tvalid;
 assign m_axis_tdata = reg_tdata;
-    
 
 reg        c_alternating_bit = 1'b0;
 reg [31:0] packet_counter = 32'h0000_0000;
@@ -74,8 +75,8 @@ typedef enum logic [3:0] {
     NEW_DATA,
     ACK_SENDING,
     ACK_TIMEOUT
-} transmitter_state;
-transmitter_state state;
+} transmitter_state_t;
+transmitter_state_t state;
 
 always_ff @ (posedge aclk or negedge aresetn) begin
     if (!aresetn) begin
@@ -84,7 +85,7 @@ always_ff @ (posedge aclk or negedge aresetn) begin
         packet_counter  <= 32'h0000_0000;
         c_alternating_bit <= 1'b0;
         reg_tvalid <= 1'b0;
-        reg_tla = 8'd0;st <= 1'b0;
+        reg_tlast <= 1'b0;
         reg_tdata <= 8'h00;
         state <= RESET_STATE;
     end else begin
@@ -137,6 +138,10 @@ always_ff @ (posedge aclk or negedge aresetn) begin
                     timeout_counter <= 32'h0000_0000;
                     state <= ACK_SENDING;
                 end
+            end
+
+            default: begin
+                state <= NEW_DATA;
             end
         endcase
     end

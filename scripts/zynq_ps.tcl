@@ -63,6 +63,9 @@ connect_bd_net [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins proc_sy
 connect_bd_net [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins proc_sys_reset/interconnect_aresetn]
 connect_bd_net [get_bd_pins debug_bridge_0/s_axi_aresetn] [get_bd_pins proc_sys_reset/peripheral_aresetn]
 
+# Set debug bridge accessible at 0xA000_0000
+assign_bd_address -target_address_space /zynq_ultra_ps/Data [get_bd_addr_segs debug_bridge_0/S_AXI/Reg0] -force
+set_property offset 0xA0000000 [get_bd_addr_segs {zynq_ultra_ps/Data/SEG_debug_bridge_0_Reg0}]
 
 #######################################
 # Save block design

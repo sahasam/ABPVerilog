@@ -1,6 +1,9 @@
 /* Alternating bit protocol. Receiver Side.
  * Sahas Munamala 06/03/2024
  */
+
+`timescale 1 ps/1 ps
+
 module abp_receiver (
     input  logic       aclk,
     input  logic       aresetn,
@@ -17,17 +20,15 @@ module abp_receiver (
 );
 
 reg alternating_bit = 1'b0;
-reg [63:0] sender_value = 64'h0000_0000_0000_0000;
+logic [63:0] sender_value = 64'h0000_0000_0000_0000;
 logic f_ack_received;
 
 always @ (posedge aclk or negedge aresetn) begin
     if (!aresetn) begin
         alternating_bit <= 1'b0;
-        sender_value <= 1'b0;
     end
     else begin
         alternating_bit <= ~alternating_bit;
-        sender_value <= sender_value + 1'b1;
     end
 end
 
@@ -43,13 +44,13 @@ abp_receiver_transmitter #(
     .m_axis_tdata  (m_axis_tdata),
 
     .alternating_bit (alternating_bit),
-    .sender_value    (sender_value)
+    .busy       ()
 );
 
 abp_receiver_receiver abp_receiver_receiver_inst (
-    .clk,
+    .aclk,
     .aresetn,
-    
+
     .s_axis_tvalid,
     .s_axis_tready,
     .s_axis_tlast,
@@ -57,8 +58,8 @@ abp_receiver_receiver abp_receiver_receiver_inst (
 
     .busy            (),
     .expected_bit    (alternating_bit),
-    .ack_received    (f_ack_received),
-    .recv_flag       ()
+    .sender_value    (sender_value),
+    .recv_flag       (f_ack_received)
 );
 
 

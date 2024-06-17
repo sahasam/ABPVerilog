@@ -628,7 +628,7 @@ module demo_tb;
   reg          gen_tx_data;
   reg          check_tx_data;
   reg          config_bist;
-  
+ 
   wire         frame_error;
   reg          bist_mode_error;
   wire         serial_response;
@@ -649,7 +649,7 @@ module demo_tb;
   // Wire up Device Under Test
   //----------------------------------------------------------------------------
 
-  fpga dut
+  fpga_core dut
     (
       // asynchronous reset
       .glbl_rst                   (reset),
@@ -683,7 +683,7 @@ module demo_tb;
     $stop;
   end
 
-  
+
 
   //----------------------------------------------------------------------------
   // Simulate the MDIO -

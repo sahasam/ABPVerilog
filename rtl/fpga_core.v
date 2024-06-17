@@ -832,6 +832,7 @@ module fpga_core
   //  Instantiate the address swapping module and simple pattern generator
   //----------------------------------------------------------------------------
 
+   /*
    tri_mode_ethernet_mac_0_basic_pat_gen basic_pat_gen_inst (
       .axi_tclk                     (tx_fifo_clock),
       .axi_tresetn                  (tx_fifo_resetn),
@@ -855,7 +856,22 @@ module fpga_core
       .frame_error                  (int_frame_error),
       .activity_flash               (int_activity_flash)
    );
-   
+   */
+
+   abp_receiver abp_receiver_i (
+      .aclk      (tx_fifo_clock),
+      .aresetn   (tx_fifo_resetn),
+
+      .s_axis_tvalid     (rx_axis_fifo_tvalid),
+      .s_axis_tdata      (rx_axis_fifo_tdata),
+      .s_axis_tlast      (rx_axis_fifo_tlast),
+      .s_axis_tready     (rx_axis_fifo_tready),
+
+      .m_axis_tvalid     (tx_axis_fifo_tvalid),
+      .m_axis_tdata      (tx_axis_fifo_tdata),
+      .m_axis_tlast      (tx_axis_fifo_tlast),
+      .m_axis_tready     (tx_axis_fifo_tready)
+   );
 
 
 

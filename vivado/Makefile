@@ -7,24 +7,29 @@ FPGA_TOP  = fpga
 FPGA_ARCH = zynquplus
 
 # Files for synthesis
-SYN_FILES  = rtl/fpga.v
-SYN_FILES += rtl/fpga_core.v
-SYN_FILES += rtl/temac_example_design_resets.v
-SYN_FILES += rtl/xlnx-temac/temac_address_swap.v
-SYN_FILES += rtl/xlnx-temac/temac_axi_lite_sm.v
-SYN_FILES += rtl/xlnx-temac/temac_axi_mux.v
-SYN_FILES += rtl/xlnx-temac/temac_axi_pat_check.v
-SYN_FILES += rtl/xlnx-temac/temac_axi_pat_gen.v
-SYN_FILES += rtl/xlnx-temac/temac_axi_pipe.v
-SYN_FILES += rtl/xlnx-temac/temac_basic_pat_gen.v
-SYN_FILES += rtl/xlnx-temac/temac_bram_tdp.v
-SYN_FILES += rtl/xlnx-temac/temac_fifo_block.v
-SYN_FILES += rtl/xlnx-temac/temac_reset_sync.v
-SYN_FILES += rtl/xlnx-temac/temac_rx_client_fifo.v
-SYN_FILES += rtl/xlnx-temac/temac_sync_block.v
-SYN_FILES += rtl/xlnx-temac/temac_syncer_level.v
-SYN_FILES += rtl/xlnx-temac/temac_ten_100_1g_eth_fifo.v
-SYN_FILES += rtl/xlnx-temac/temac_tx_client_fifo.v
+SYNV_FILES  = rtl/fpga.v
+SYNV_FILES += rtl/fpga_core.v
+SYNV_FILES += rtl/temac_example_design_resets.v
+SYNV_FILES += rtl/xlnx-temac/temac_address_swap.v
+SYNV_FILES += rtl/xlnx-temac/temac_axi_lite_sm.v
+SYNV_FILES += rtl/xlnx-temac/temac_axi_mux.v
+SYNV_FILES += rtl/xlnx-temac/temac_axi_pat_check.v
+SYNV_FILES += rtl/xlnx-temac/temac_axi_pat_gen.v
+SYNV_FILES += rtl/xlnx-temac/temac_axi_pipe.v
+SYNV_FILES += rtl/xlnx-temac/temac_basic_pat_gen.v
+SYNV_FILES += rtl/xlnx-temac/temac_bram_tdp.v
+SYNV_FILES += rtl/xlnx-temac/temac_fifo_block.v
+SYNV_FILES += rtl/xlnx-temac/temac_reset_sync.v
+SYNV_FILES += rtl/xlnx-temac/temac_rx_client_fifo.v
+SYNV_FILES += rtl/xlnx-temac/temac_sync_block.v
+SYNV_FILES += rtl/xlnx-temac/temac_syncer_level.v
+SYNV_FILES += rtl/xlnx-temac/temac_ten_100_1g_eth_fifo.v
+SYNV_FILES += rtl/xlnx-temac/temac_tx_client_fifo.v
+
+SYNSV_FILES  = rtl/abp/receiver/abp_receiver_receiver.sv
+SYNSV_FILES += rtl/abp/receiver/abp_receiver_transmitter.sv
+SYNSV_FILES += rtl/abp/receiver/abp_receiver.sv
+SYNSV_FILES += rtl/abp/bram.sv
 
 # Integration Testbench
 TB_FILES  = rtl/sim/demo_tb.v

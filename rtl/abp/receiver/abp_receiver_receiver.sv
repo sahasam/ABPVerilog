@@ -2,6 +2,8 @@
  * Sahas Munamala 06/09/2024
  */
 
+`timescale 1 ps/1 ps
+
 module abp_receiver_receiver (
     input  logic        aclk,
     input  logic        aresetn,
@@ -38,12 +40,13 @@ typedef enum logic [3:0] {
     RECEIVING,
     CHECK_BIT,
     ANALYSIS,
-} transmitter_state;
-transmitter_state state;
+    DONE
+} transmitter_state_t;
+transmitter_state_t state;
 
 //64x8 bram
 bram #(
-    .ADDRESS_WIDTH(6)
+    .ADDRESS_WIDTH(6),
     .DATA_WIDTH(8)
 ) bram_inst (
     .clk      (aclk),
@@ -51,7 +54,7 @@ bram #(
     .addr     (r_addr),
     .data_in  (r_din),
     .data_out (l_dout)
-)
+);
 
 
 always_ff @ (posedge aclk or negedge aresetn) begin
@@ -112,12 +115,10 @@ always_ff @ (posedge aclk or negedge aresetn) begin
                     if (l_dout[0] == expected_bit) begin
                         state <= ANALYSIS;
                     end
-                    
                 end
             end
 
             CHECK_BIT: begin
-                r
             end
 
             ANALYSIS: begin
@@ -133,6 +134,7 @@ always_ff @ (posedge aclk or negedge aresetn) begin
                     6'd5: r_sender_value[47:40] <= l_dout;
                     6'd6: r_sender_value[55:48] <= l_dout;
                     6'd7: r_sender_value[63:56] <= l_dout;
+                    default: r_sender_value[7:0] <= l_dout;
                 endcase
                 if (r_addr == 6'd7) begin
                     state <= DONE;
@@ -143,7 +145,9 @@ always_ff @ (posedge aclk or negedge aresetn) begin
 
             DONE: begin
                 r_tready <= 1'b0;
-                if ()
+            end
+
+            default: begin
             end
         endcase
     end
