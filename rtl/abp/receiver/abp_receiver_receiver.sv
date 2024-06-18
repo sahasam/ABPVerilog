@@ -19,15 +19,20 @@ module abp_receiver_receiver (
     output logic        recv_flag
 );
 
-reg        r_busy = 1'b0;
-reg [63:0] r_sender_value = 64'd0;
-reg        r_recv_flag = 1'd0;
-reg        r_tready = 1'd0;
+reg          r_busy = 1'b0;
+reg [63:0]   r_sender_value = 64'd0;
+reg          r_recv_flag = 1'd0;
+reg          r_tready = 1'd0;
+logic [31:0] byte_count = 32'd0;
+logic [5:0]  bram_addr = 6'd0;
 
 reg   [5:0]  r_addr = 6'd0;
-reg          r_we = 1'b0;
+reg          write_enable = 1'b0;
 logic [7:0]  l_dout;
-reg   [7:0]  r_din = 8'd0;
+reg   [7:0]  bram_data = 8'd0;
+logic        alternating_bit = 1'd0;
+logic        checked_bit_flag = 1'd0;
+bit          new_value_flag = 1'd0;
 
 assign busy = r_busy;
 assign sender_value = r_sender_value;
@@ -36,13 +41,20 @@ assign s_axis_tready = r_tready;
 
 typedef enum logic [3:0] {
     RESET_STATE,
-    WAITING,
+    IDLE,
     RECEIVING,
     CHECK_BIT,
-    ANALYSIS,
+    READ_DATA,
     DONE
 } transmitter_state_t;
 transmitter_state_t state, next_state;
+
+typedef enum logic [3:0] {
+    CB_IDLE,
+    READ,
+    CHECK
+} cbstate_t;
+cbstate_t cbstate;
 
 //64x8 bram
 bram #(
@@ -50,154 +62,110 @@ bram #(
     .DATA_WIDTH(8)
 ) bram_inst (
     .clk      (aclk),
-    .we       (r_we),
-    .addr     (r_addr),
-    .data_in  (r_din),
+    .we       (write_enable),
+    .addr     (bram_addr),
+    .data_in  (bram_data),
     .data_out (l_dout)
 );
 
 always_ff @(posedge aclk or negedge aresetn) begin
     if (!aresetn) begin
         state <= RESET_STATE;
+        cbstate <= IDLE;
     end else begin
         state <= next_state;
+
+        case (state)
+            RESET_STATE: begin
+                r_busy <= 1'b0;
+                r_sender_value <= 64'd0;
+                r_recv_flag <= 1'b0;
+                bram_addr <= 6'd0;
+                write_enable <= 1'd0;
+                bram_data <= 8'h00;
+            end
+
+            RECEIVING: begin
+                if (s_axis_tvalid) begin
+                    bram_data <= s_axis_tdata;
+                    write_enable <= 1;
+                    byte_count <= byte_count + 1;
+                    bram_addr <= bram_addr + 1;
+                    if (s_axis_tlast) begin
+                        r_tready <= 0;
+                    end
+                end
+            end
+
+            default: begin end
+        endcase
     end
 end
 
 always_comb begin
     case (state)
         RESET_STATE: begin
-            r_busy = 1'b0;
-            r_sender_value = 64'd0;
-            r_recv_flag = 1'b0;
-            r_addr = 6'd0;
-            r_we = 1'd0;
-            r_din = 8'h00;
-            next_state = WAITING;
+            next_state = IDLE;
         end
 
-        WAITING: begin
-            r_tready = 1'b0;
-            r_addr = 6'd0;
-            r_we   = 1'b0;
+        IDLE: begin
+            r_tready = 1'b1;
             if (s_axis_tvalid) begin
+                r_addr = 6'd0;
+                write_enable   = 1'b1;
                 next_state = RECEIVING;
+            end else begin
+                r_addr = 6'd0;
+                write_enable   = 1'b0;
             end
         end
 
         RECEIVING: begin
-
+            if (s_axis_tvalid) begin
+                if (byte_count < 64) begin
+                    next_state = IDLE;
+                end else if (byte_count > 64) begin
+                    next_state = IDLE;
+                end else begin
+                    next_state = CHECK_BIT;
+                    cbstate = READ;
+                end
+            end
         end
 
         CHECK_BIT: begin
-
+            if (checked_bit_flag && alternating_bit == expected_bit) begin
+                next_state = new_value_flag ? READ_DATA : IDLE;
+            end
         end
 
-        ANALYSIS: begin
-
+        READ_DATA: begin
+            next_state = IDLE;
         end
 
-        default: begin
-
-        end
+        default: begin end
     endcase
 end
-/*
+
 always_ff @ (posedge aclk or negedge aresetn) begin
-    if (!aresetn) begin
-        state <= RESET_STATE;
-    end else begin
-        case (state)
-            RESET_STATE: begin
-                r_busy <= 1'b0;
-                r_sender_value <= 64'd0;
-                r_recv_flag <= 1'b0;
-                r_addr <= 6'd0;
-                r_we <= 1'd0;
-                r_din <= 8'h00;
-                state <= WAITING;
+    if (state == CHECK_BIT) begin
+        case (cbstate)
+            READ: begin
+                bram_addr <= 6'd63;
+                cbstate <= CHECK;
             end
 
-            WAITING: begin
-                r_tready <= 1'b1;
-                if (!s_axis_tvalid) begin
-                    r_busy <= 1'b0;
-                    r_addr <= 6'd0;
-                    r_we   <= 1'b0;
-                    state  <= WAITING;
-                end else begin
-                    r_busy <= 1'b1;
-                    r_addr <= 6'd0;
-                    r_din  <= s_axis_tdata;
-                    r_we   <= 1'b1;
-                    state  <= RECEIVING;
-                end
+            CHECK: begin
+                checked_bit_flag <= 1'b1;
+                new_value_flag <= (expected_bit & bram_data[0]);
+                cbstate <= CB_IDLE;
             end
 
-            RECEIVING: begin
-                if (s_axis_tvalid) begin
-                    if (r_addr < 6'd63) begin
-                        r_din  <= s_axis_tdata;
-                        r_we   <= 1'b1;
-                        if (s_axis_tlast) begin
-                            r_tready <= 1'b0;
-                            state    <= ANALYSIS;
-                        end else begin
-                            r_addr <= r_addr + 1;
-                            r_tready <= 1'b1;
-                            state  <= RECEIVING;
-                        end
-                    end else begin
-                        // If the packet is too long, stop writing, but read until tlast.
-                        if (s_axis_tlast) begin
-                            r_we <= 1'b0;
-                            r_tready <= 1'b0;
-                            state <= CHECK_BIT;
-                        end
-                        r_we <= 1'b0;
-                        r_tready <= 1'b0;
-                    end
-                end else begin
-                    if (l_dout[0] == expected_bit) begin
-                        state <= ANALYSIS;
-                    end
-                end
-            end
-
-            CHECK_BIT: begin
-            end
-
-            ANALYSIS: begin
-                // Perform Sequential Reads
-                r_we <= 1'b0;
-                r_tready <= 1'b0;
-                case (r_addr)
-                    6'd0: r_sender_value[7:0] <= l_dout;
-                    6'd1: r_sender_value[15:8] <= l_dout;
-                    6'd2: r_sender_value[23:16] <= l_dout;
-                    6'd3: r_sender_value[31:24] <= l_dout;
-                    6'd4: r_sender_value[39:32] <= l_dout;
-                    6'd5: r_sender_value[47:40] <= l_dout;
-                    6'd6: r_sender_value[55:48] <= l_dout;
-                    6'd7: r_sender_value[63:56] <= l_dout;
-                    default: r_sender_value[7:0] <= l_dout;
-                endcase
-                if (r_addr == 6'd7) begin
-                    state <= DONE;
-                end else begin
-                    r_addr <= r_addr + 1;
-                end
-            end
-
-            DONE: begin
-                r_tready <= 1'b0;
-            end
-
-            default: begin
-            end
+            default: begin end
         endcase
+    end else begin
+        cbstate <= CB_IDLE;
     end
 end
-*/
 
 endmodule

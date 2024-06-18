@@ -6,6 +6,7 @@ module bram #(
 )(
     input  logic clk,
     input  logic we,
+
     input  logic [DATA_WIDTH-1:0] data_in,
     input  logic [ADDRESS_WIDTH-1:0] addr,
     output logic [DATA_WIDTH-1:0] data_out

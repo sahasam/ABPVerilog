@@ -8,7 +8,7 @@ MODULE ?= test_module_name  # Replace with the name of your Python test module (
 
 # Path to your Verilog sources
 VERILOG_SOURCES += $(wildcard ../rtl/abp/receiver/*.sv)
-VERILOG_SOURCES += $(wildcard ../rtl/abp/sram.sv)  
+VERILOG_SOURCES += $(wildcard ../rtl/abp/bram.sv)  
 
 # Path to your Cocotb test
 PYTHONPATH = ./:$(PYTHONPATH)
