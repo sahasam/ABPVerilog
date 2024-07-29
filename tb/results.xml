@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1718672268" />
-    <testcase name="test_abp_rr_correctly_updates_sender_value" classname="abp_receiver_receiver_test" file="/home/sahas/dev/xvc/abp_verilog/tb/abp_receiver_receiver_test.py" lineno="31" time="0.009880781173706055" sim_time_ns="1040.001" ratio_time="105254.93700513958" />
+    <property name="random_seed" value="1722217181" />
+    <testcase name="test_abp_rr_correctly_updates_sender_value" classname="abp_receiver_receiver_test" file="/home/sahas/dev/xvc/abp_verilog/tb/abp_receiver_receiver_test.py" lineno="31" time="0.009622812271118164" sim_time_ns="1040.001" ratio_time="108076.6173856941" />
   </testsuite>
 </testsuites>

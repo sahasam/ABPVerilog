@@ -16,7 +16,10 @@ PYTHONPATH = ./:$(PYTHONPATH)
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
 receiver_transmitter:
-	$(MAKE) TOPLEVEL=abp_receiver_transmitter MODULE=abp_receiver_transmitter_test
+	$(MAKE) TOPLEVEL=abp_receiver_transmitter MODULE=abp_receiver_transmitter_test WAVES=1
 
 receiver_receiver:
-	$(MAKE) TOPLEVEL=abp_receiver_receiver MODULE=abp_receiver_receiver_test
+	$(MAKE) TOPLEVEL=abp_receiver_receiver MODULE=abp_receiver_receiver_test WAVES=1
+
+bram:
+	$(MAKE) TOPLEVEL=bram MODULE=bram_test WAVES=1

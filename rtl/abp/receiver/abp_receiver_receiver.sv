@@ -22,17 +22,20 @@ module abp_receiver_receiver (
 reg          r_busy = 1'b0;
 reg [63:0]   r_sender_value = 64'd0;
 reg          r_recv_flag = 1'd0;
-reg          r_tready = 1'd0;
+logic        r_tready = 1'b0;
+logic        r_tlast = 1'b0;
+logic        r_tvalid = 1'b0;
 logic [31:0] byte_count = 32'd0;
 logic [5:0]  bram_addr = 6'd0;
 
-reg   [5:0]  r_addr = 6'd0;
 reg          write_enable = 1'b0;
-logic [7:0]  l_dout;
-reg   [7:0]  bram_data = 8'd0;
+wire  [7:0]  l_dout;
+logic [7:0]  bram_data_in;
+wire  [7:0]  bram_data_out;
 logic        alternating_bit = 1'd0;
 logic        checked_bit_flag = 1'd0;
 bit          new_value_flag = 1'd0;
+logic        cb_start;
 
 assign busy = r_busy;
 assign sender_value = r_sender_value;
@@ -61,19 +64,23 @@ bram #(
     .ADDRESS_WIDTH(6),
     .DATA_WIDTH(8)
 ) bram_inst (
-    .clk      (aclk),
-    .we       (write_enable),
-    .addr     (bram_addr),
-    .data_in  (bram_data),
-    .data_out (l_dout)
+    .clk     (aclk),
+    .we      (write_enable),
+    .en      (1'b1),
+    .addr    (bram_addr),
+    .data_in     (bram_data_in),
+    .data_out    (bram_data_out)
 );
 
 always_ff @(posedge aclk or negedge aresetn) begin
     if (!aresetn) begin
         state <= RESET_STATE;
-        cbstate <= IDLE;
+        cbstate <= CB_IDLE;
+        cb_start <= 1'b0;
     end else begin
         state <= next_state;
+        r_tlast <= s_axis_tlast;
+        r_tvalid <= s_axis_tvalid;
 
         case (state)
             RESET_STATE: begin
@@ -82,19 +89,35 @@ always_ff @(posedge aclk or negedge aresetn) begin
                 r_recv_flag <= 1'b0;
                 bram_addr <= 6'd0;
                 write_enable <= 1'd0;
-                bram_data <= 8'h00;
+            end
+
+            IDLE: begin
+                r_tready <= 1'b1;
+                bram_addr <= 6'd0;
+                if (s_axis_tready) begin
+                    write_enable <= 1'b1;
+                    bram_data_in <= s_axis_tdata;
+                    byte_count <= 32'd1;
+                end
             end
 
             RECEIVING: begin
-                if (s_axis_tvalid) begin
-                    bram_data <= s_axis_tdata;
-                    write_enable <= 1;
-                    byte_count <= byte_count + 1;
+                r_tready <= 1'b1;
+                byte_count <= byte_count + 1;
+                if (r_tvalid & r_tlast) begin
+                    write_enable <= 1'b0;
+                    cb_start     <= 1'b1;
+                    bram_addr    <= 6'h3F;
+                end else if (r_tvalid) begin
+                    write_enable <= 1'b1;
+                    bram_data_in <= s_axis_tdata;
                     bram_addr <= bram_addr + 1;
-                    if (s_axis_tlast) begin
-                        r_tready <= 0;
-                    end
-                end
+                end 
+            end
+
+            CHECK_BIT: begin
+                write_enable <= 1'b0;
+                r_tready <= 1'b0;
             end
 
             default: begin end
@@ -109,32 +132,31 @@ always_comb begin
         end
 
         IDLE: begin
-            r_tready = 1'b1;
             if (s_axis_tvalid) begin
-                r_addr = 6'd0;
+                bram_addr = 6'd0;
                 write_enable   = 1'b1;
                 next_state = RECEIVING;
             end else begin
-                r_addr = 6'd0;
+                r_tready = 1'b1;
+                bram_addr = 6'd0;
                 write_enable   = 1'b0;
             end
         end
 
         RECEIVING: begin
-            if (s_axis_tvalid) begin
+            if (s_axis_tvalid & r_tlast) begin
                 if (byte_count < 64) begin
                     next_state = IDLE;
                 end else if (byte_count > 64) begin
                     next_state = IDLE;
                 end else begin
                     next_state = CHECK_BIT;
-                    cbstate = READ;
                 end
             end
         end
 
         CHECK_BIT: begin
-            if (checked_bit_flag && alternating_bit == expected_bit) begin
+            if (checked_bit_flag) begin
                 next_state = new_value_flag ? READ_DATA : IDLE;
             end
         end
@@ -150,14 +172,21 @@ end
 always_ff @ (posedge aclk or negedge aresetn) begin
     if (state == CHECK_BIT) begin
         case (cbstate)
+            CB_IDLE: begin
+                if (cb_start & 1'b1) begin
+                    cbstate <= READ;
+                    cb_start <= 1'b0;
+                    write_enable <= 1'b0;
+                end
+            end
+
             READ: begin
-                bram_addr <= 6'd63;
                 cbstate <= CHECK;
             end
 
             CHECK: begin
                 checked_bit_flag <= 1'b1;
-                new_value_flag <= (expected_bit & bram_data[0]);
+                new_value_flag <= ~(expected_bit ^ bram_data_out[0]);
                 cbstate <= CB_IDLE;
             end
 

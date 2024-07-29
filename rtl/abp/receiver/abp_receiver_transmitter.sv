@@ -81,7 +81,7 @@ transmitter_state_t state;
 always_ff @ (posedge aclk or negedge aresetn) begin
     if (!aresetn) begin
         reg_busy <= 1'b0;
-        timeout_counter <= 32'h0000_0000;
+        timeout_counter <= 32'h0000_0001;
         packet_counter  <= 32'h0000_0000;
         c_alternating_bit <= 1'b0;
         reg_tvalid <= 1'b0;

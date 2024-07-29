@@ -33,6 +33,8 @@ async def test_abp_rr_correctly_updates_sender_value(dut):
     tb = Abp_Receiver_Receiver_Testbench(dut)
     await tb.reset()
 
+    dut.expected_bit.value = 0
+
     bytes = b'\xde\xad\xbe\xef' + b'\x00'*(60)
     frame = AxiStreamFrame(tdata=bytes)
     await tb.source.send(frame)
