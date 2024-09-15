@@ -112,7 +112,7 @@ always_ff @(posedge aclk or negedge aresetn) begin
                     write_enable <= 1'b1;
                     bram_data_in <= s_axis_tdata;
                     bram_addr <= bram_addr + 1;
-                end 
+                end
             end
 
             CHECK_BIT: begin

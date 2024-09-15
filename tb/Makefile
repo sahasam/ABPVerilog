@@ -13,6 +13,9 @@ VERILOG_SOURCES += $(wildcard ../rtl/abp/bram.sv)
 # Path to your Cocotb test
 PYTHONPATH = ./:$(PYTHONPATH)
 
+PARAMETERS = -Pabp_packet_rx.DATA_WIDTH=8 -Pabp_packet_rx.VALUE_SIZE=4 -Pabp_packet_rx.PACKET_SIZE=64
+COMPILE_ARGS += $(PARAMETERS)
+
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
 receiver_transmitter:
@@ -20,6 +23,9 @@ receiver_transmitter:
 
 receiver_receiver:
 	$(MAKE) TOPLEVEL=abp_receiver_receiver MODULE=abp_receiver_receiver_test WAVES=1
+
+packet_rx:
+	$(MAKE) TOPLEVEL=abp_packet_rx MODULE=abp_packet_rx_test WAVES=1
 
 bram:
 	$(MAKE) TOPLEVEL=bram MODULE=bram_test WAVES=1
