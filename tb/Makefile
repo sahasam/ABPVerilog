@@ -41,10 +41,6 @@ include $(shell cocotb-config --makefiles)/Makefile.sim
 # Custom targets
 .PHONY: all_tests clean_all $(TESTS)
 
-all_tests: $(TESTS)
-	@echo "All tests completed"
-	@python3 utils/combine_sim_results.py $(foreach test,$(TESTS),$(SIM_BUILD)/$(test)_results.xml)
-
 $(TESTS):
 	@echo "Running test: $@"
 	$(MAKE) sim \
@@ -53,12 +49,15 @@ $(TESTS):
 		COCOTB_RESULTS_FILE=$(SIM_BUILD_DIR)/$@_results.xml \
 		SIM_BUILD=$(SIM_BUILD_DIR)/$@ \
 		COMPILE_ARGS="$(call get_parameters_as_arguments,$@) -g2012"
+	@python3 utils/combine_sim_results.py $(foreach test,$(TESTS),$(SIM_BUILD)/$(test)_results.xml)
+
+all_tests: $(TESTS)
 
 # Debug targets
 print-%:
 	@echo '$*=$($*)'
 
-print-plusargs-%:
+print-parameters-%:
 	@echo 'PLUSARGS for $*: $(call get_parameters_as_arguments,$*)'
 
 print-sources:
