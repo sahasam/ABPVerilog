@@ -27,5 +27,8 @@ receiver_receiver:
 packet_rx:
 	$(MAKE) TOPLEVEL=abp_packet_rx MODULE=abp_packet_rx_test WAVES=1
 
+packet_tx:
+	$(MAKE) TOPLEVEL=abp_packet_tx MODULE=abp_packet_tx_test WAVES=1
+
 bram:
 	$(MAKE) TOPLEVEL=bram MODULE=bram_test WAVES=1
