@@ -1,5 +1,6 @@
 /* Alternating bit protocol: packet receiver.
- * Receives packets and processes them according to the ABP protocol.
+ * Receives packets, processes them according to the ABP protocol,
+ * increments the value, and transmits the new packet.
  */
 
 `timescale 1ns/1ns
@@ -8,7 +9,11 @@
 module abp_receiver
 #(
    // Width of AXI Stream interfaces in bits
-   parameter integer DATA_WIDTH = 8
+   parameter integer DATA_WIDTH = 8,
+   // Number of bytes to read from packet to counter
+   parameter integer VALUE_SIZE = 4,
+   // Number of bytes in a packet
+   parameter integer PACKET_SIZE = 64
 )
 (
    input wire                      aclk,
@@ -28,32 +33,59 @@ module abp_receiver
 );
 
    // Internal signals
-   reg expected_bit;
-   reg [DATA_WIDTH-1:0] data_reg;
-   reg valid_reg;
-   reg last_reg;
+   wire                      rx_abp_valid;
+   wire [VALUE_SIZE*8-1:0]   rx_abp_value;
+   wire                      rx_abp_bit;
+   wire                      rx_abp_ready;
 
-   // Simple state machine
-   always @(posedge aclk or negedge aresetn) begin
-      if (!aresetn) begin
-         expected_bit <= 1'b0;
-         data_reg <= {DATA_WIDTH{1'b0}};
-         valid_reg <= 1'b0;
-         last_reg <= 1'b0;
-      end else if (s_axis_tvalid && s_axis_tready) begin
-         expected_bit <= ~expected_bit;
-         data_reg <= s_axis_tdata;
-         valid_reg <= 1'b1;
-         last_reg <= s_axis_tlast;
-      end else if (m_axis_tvalid && m_axis_tready) begin
-         valid_reg <= 1'b0;
-      end
-   end
+   wire                      tx_abp_valid;
+   wire [VALUE_SIZE*8-1:0]   tx_abp_value;
+   wire                      tx_abp_bit;
+   wire                      tx_abp_ready;
 
-   // Output assignments
-   assign s_axis_tready = !valid_reg || m_axis_tready;
-   assign m_axis_tvalid = valid_reg;
-   assign m_axis_tdata = data_reg;
-   assign m_axis_tlast = last_reg;
+   // Instantiate abp_packet_rx
+   abp_packet_rx #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .VALUE_SIZE(VALUE_SIZE),
+      .PACKET_SIZE(PACKET_SIZE)
+   ) rx_inst (
+      .aclk(aclk),
+      .resetn(aresetn),
+      .eth_rx_tvalid(s_axis_tvalid),
+      .eth_rx_tdata(s_axis_tdata),
+      .eth_rx_tlast(s_axis_tlast),
+      .eth_rx_tready(s_axis_tready),
+      .abp_tx_ready(rx_abp_ready),
+      .abp_tx_valid(rx_abp_valid),
+      .abp_tx_value(rx_abp_value),
+      .abp_tx_bit(rx_abp_bit),
+      .busy(),
+      .error_early_termination()
+   );
+
+   // Increment the value
+   assign tx_abp_value = rx_abp_value;
+   assign tx_abp_bit = rx_abp_bit;
+   assign tx_abp_valid = rx_abp_valid;
+   assign rx_abp_ready = tx_abp_ready;
+
+   // Instantiate abp_packet_tx
+   abp_packet_tx #(
+      .DATA_WIDTH(DATA_WIDTH),
+      .VALUE_SIZE(VALUE_SIZE),
+      .PACKET_SIZE(PACKET_SIZE)
+   ) tx_inst (
+      .aclk(aclk),
+      .resetn(aresetn),
+      .m_eth_tx_tvalid(m_axis_tvalid),
+      .m_eth_tx_tdata(m_axis_tdata),
+      .m_eth_tx_tlast(m_axis_tlast),
+      .m_eth_tx_tready(m_axis_tready),
+      .s_abp_ready(tx_abp_ready),
+      .s_abp_valid(tx_abp_valid),
+      .s_abp_value(tx_abp_value),
+      .s_abp_bit(tx_abp_bit),
+      .busy()
+   );
 
 endmodule

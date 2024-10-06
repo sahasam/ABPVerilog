@@ -7,8 +7,7 @@ TOPLEVEL ?= top_module_name  # Replace with the name of your top-level module
 MODULE ?= test_module_name  # Replace with the name of your Python test module (without the .py extension)
 
 # Path to your Verilog sources
-VERILOG_SOURCES += $(wildcard ../rtl/abp/receiver/*.sv)
-VERILOG_SOURCES += $(wildcard ../rtl/abp/bram.sv)  
+VERILOG_SOURCES = $(wildcard ../rtl/abp/*.sv)
 
 # Path to your Cocotb test
 PYTHONPATH = ./:$(PYTHONPATH)
@@ -32,3 +31,6 @@ packet_tx:
 
 bram:
 	$(MAKE) TOPLEVEL=bram MODULE=bram_test WAVES=1
+
+receiver:
+	$(MAKE) TOPLEVEL=abp_receiver MODULE=abp_receiver_test WAVES=1
