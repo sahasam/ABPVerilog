@@ -6,9 +6,6 @@ from cocotb.regression import TestFactory
 
 import logging
 
-from utils import test_factory
-
-
 class ABP_Packet_Tx_Testbench:
     def __init__(self, dut):
         self.dut = dut
@@ -64,10 +61,6 @@ async def test_abp_packet_tx_idle(dut):
     assert dut.m_eth_tx_tvalid.value == 0, "m_eth_tx_tvalid should be low initially"
     assert dut.s_abp_ready.value == 1, "s_abp_ready should be high initially"
 
-@test_factory(
-    input_value=[0x00000000, 0xaabbccdd, 0xffffffff],
-    input_bit=[0, 1]
-)
 async def run_simple_packet_test(dut, input_value, input_bit):
     """
     Test sending a simple packet through abp_packet_tx.
@@ -89,12 +82,6 @@ async def run_simple_packet_test(dut, input_value, input_bit):
     assert rx_frame.tdata[0:4] == expected_value.to_bytes(4, 'big'), f"First 4 bytes of transmitted data do not match. Expected: {expected_value:08X}, Got: {int.from_bytes(rx_frame.tdata[0:4], 'big'):08X}"
     assert rx_frame.tdata[-1] & 0x01 == input_bit, f"Last bit is not set correctly. Expected: {input_bit}, Got: {rx_frame.tdata[-1] & 0x01}"
     assert len(rx_frame.tdata) == 64, "Packet size is incorrect"
-
-# Create test factory for simple packet test
-factory = TestFactory(run_simple_packet_test)
-factory.add_option("input_value", [0x00000000, 0xaabbccdd, 0xffffffff])
-factory.add_option("input_bit", [0, 1])
-factory.generate_tests()
 
 @cocotb.test(timeout_time=2000, timeout_unit="ns")
 async def test_abp_packet_tx_multiple_packets(dut):
@@ -312,3 +299,11 @@ async def test_abp_packet_tx_second_value_after_transmission(dut):
     
     assert rx_frame1.tdata[0:4] == expected_value1.to_bytes(4, 'big'), f"First packet data does not match. Expected: {expected_value1:08X}, Got: {int.from_bytes(rx_frame1.tdata[0:4], 'big'):08X}"
     assert rx_frame2.tdata[0:4] == expected_value2.to_bytes(4, 'big'), f"Second packet data does not match. Expected: {expected_value2:08X}, Got: {int.from_bytes(rx_frame2.tdata[0:4], 'big'):08X}"
+
+# Conditional TestFactory setup
+if cocotb.SIM_NAME:
+    # Create test factory for simple packet test
+    factory = TestFactory(run_simple_packet_test)
+    factory.add_option("input_value", [0x00000000, 0xaabbccdd, 0xffffffff])
+    factory.add_option("input_bit", [0, 1])
+    factory.generate_tests()
