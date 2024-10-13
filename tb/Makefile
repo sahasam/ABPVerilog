@@ -1,5 +1,3 @@
-# Cocotb Makefile with parameterized tests using PLUSARGS
-
 # Default configurations
 TOPLEVEL_LANG ?= verilog
 SIM ?= icarus
@@ -12,7 +10,8 @@ PYTHONPATH := .:$(PYTHONPATH)
 TEST_CONFIG := \
     abp_packet_rx:DATA_WIDTH=8:VALUE_SIZE=4:PACKET_SIZE=64 \
     abp_packet_tx:DATA_WIDTH=8:VALUE_SIZE=4:PACKET_SIZE=64 \
-    abp_receiver:DATA_WIDTH=8:VALUE_SIZE=4:PACKET_SIZE=64
+	abp_receiver:DATA_WIDTH=8:VALUE_SIZE=4:PACKET_SIZE=64 \
+	abp_transmitter:DATA_WIDTH=8:VALUE_SIZE=4:PACKET_SIZE=64:TIMEOUT_CYCLES=1200
 
 # Helper functions
 define get_test_name
@@ -46,10 +45,10 @@ $(TESTS):
 	$(MAKE) sim \
 		TOPLEVEL=$@ \
 		MODULE=$@_test \
-		COCOTB_RESULTS_FILE=$(SIM_BUILD_DIR)/$@_results.xml \
-		SIM_BUILD=$(SIM_BUILD_DIR)/$@ \
+		WAVES=1 \
+		COCOTB_RESULTS_FILE=$(SIM_BUILD_DIR)_$@/results.xml \
+		SIM_BUILD=$(SIM_BUILD_DIR)_$@ \
 		COMPILE_ARGS="$(call get_parameters_as_arguments,$@) -g2012"
-	@python3 utils/combine_sim_results.py $(foreach test,$(TESTS),$(SIM_BUILD)/$(test)_results.xml)
 
 all_tests: $(TESTS)
 

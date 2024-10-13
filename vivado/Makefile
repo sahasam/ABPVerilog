@@ -29,6 +29,7 @@ SYNV_FILES += rtl/xlnx-temac/temac_tx_client_fifo.v
 SYNSV_FILES  = rtl/abp/abp_packet_rx.sv
 SYNSV_FILES += rtl/abp/abp_packet_tx.sv
 SYNSV_FILES += rtl/abp/abp_receiver.sv
+SYNSV_FILES += rtl/abp/abp_transmitter.sv
 
 # Integration Testbench
 TB_FILES  = rtl/sim/demo_tb.v
