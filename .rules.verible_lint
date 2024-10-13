@@ -1,0 +1,8 @@
+rules:
+  # Style rules
+  enum-name-style:
+    style: ALL_CAPS
+  module-name-style:
+    style: CamelCase
+  parameter-name-style:
+    style: ALL_CAPS
