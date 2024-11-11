@@ -35,7 +35,7 @@ module abp_transmitter
    wire                      rx_valid;
    wire [VALUE_SIZE*8-1:0]   rx_value;
    wire                      rx_bit;
-   wire                      rx_ready;
+   reg                       rx_ready = 1'b1, rx_ready_next;
 
    // Timeout counter
    reg [$clog2(TIMEOUT_CYCLES)-1:0] timeout_counter, timeout_counter_next;
@@ -56,10 +56,12 @@ module abp_transmitter
          tx_bit_reg <= 1;
          expected_bit_reg <= 1;
          tx_valid <= 1'b0;
+         rx_ready <= 1'b1;
          state_reg <= IDLE;
          timeout_counter <= 0;
       end else begin
          tx_value_reg <= tx_value_next;
+         rx_ready_reg <= rx_ready_next;
          tx_bit_reg <= tx_bit_next;
          expected_bit_reg <= expected_bit_next;
          tx_valid <= tx_valid_next;
@@ -73,6 +75,7 @@ module abp_transmitter
       tx_bit_next = tx_bit_reg;
       expected_bit_next = expected_bit_reg;
       tx_valid_next = tx_valid;
+      rx_ready_next = rx_ready_reg;
       state_next = state_reg;
       timeout_counter_next = timeout_counter;
 
@@ -95,7 +98,7 @@ module abp_transmitter
          end
 
          WAIT_FOR_RX: begin
-            if (rx_valid && rx_ready) begin
+            if (rx_valid && rx_ready_reg) begin
                if (rx_bit == expected_bit_reg) begin
                   tx_value_next = rx_value + 1;
                   tx_bit_next = ~rx_bit;
@@ -160,7 +163,7 @@ module abp_transmitter
       .eth_rx_tlast(s_axis_tlast),
       .eth_rx_tready(s_axis_tready),
 
-      .abp_tx_ready(rx_ready),
+      .abp_tx_ready(rx_ready_reg),
       .abp_tx_valid(rx_valid),
       .abp_tx_value(rx_value),
       .abp_tx_bit(rx_bit),

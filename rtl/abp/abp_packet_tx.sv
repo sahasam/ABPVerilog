@@ -45,9 +45,9 @@ logic [8*VALUE_SIZE-1:0] abp_value_reg, abp_value_next;
 logic                    abp_bit_reg, abp_bit_next;
 
 // Ethernet AXIS Frame Registers
-logic m_eth_tx_tvalid_reg, m_eth_tx_tvalid_next;
-logic m_eth_tx_tlast_reg, m_eth_tx_tlast_next;
-logic [DATA_WIDTH-1:0] m_eth_tx_tdata_reg, m_eth_tx_tdata_next;
+logic m_eth_tx_tvalid_reg = 1'b0, m_eth_tx_tvalid_next;
+logic m_eth_tx_tlast_reg = 1'b0, m_eth_tx_tlast_next;
+logic [DATA_WIDTH-1:0] m_eth_tx_tdata_reg = {DATA_WIDTH{1'b0}}, m_eth_tx_tdata_next;
 
 // ABP Hyperdata Input Handshake Registers
 logic s_abp_ready_reg, s_abp_ready_next;

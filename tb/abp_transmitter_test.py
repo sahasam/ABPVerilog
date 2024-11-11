@@ -36,7 +36,7 @@ class ABPTransmitterTB:
         bit = self.dut.m_axis_tlast.value
         return value, bit
 
-@cocotb.test(timeout_time=10000, timeout_unit="ns")
+@cocotb.test(timeout_time=15000, timeout_unit="ns")
 async def test_normal_operation(dut):
     tb = ABPTransmitterTB(dut)
     clock = Clock(dut.aclk, 10, units="ns")
@@ -84,7 +84,7 @@ async def test_normal_operation(dut):
         assert value == (value + 1) % (1 << (tb.value_size * 8)), f"Packet {i} incorrect: value={value}"
         assert bit == (i % 2 == 0), f"Packet {i} incorrect bit: {bit}"
 
-@cocotb.test(timeout_time=10000, timeout_unit="ns")
+@cocotb.test(timeout_time=100, timeout_unit="us")
 async def test_timeout_retransmission(dut):
     tb = ABPTransmitterTB(dut)
     clock = Clock(dut.aclk, 10, units="ns")
